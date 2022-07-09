@@ -1,0 +1,130 @@
+﻿<div class="col-md-12">  
+    <div class="panel panel-primary">  
+        <div class="panel-heading">  
+            <h3 class="panel-title">Please enter the details below.</h3>  
+        </div>  
+        <div class="panel-body">  
+            <div class="form-group col-md-5">  
+                <label>Student Name</label>  
+                <input type="text" name="StudentName" id="StudentName" class="form-control" placeholder="Enter Student Name" required="" />  
+            </div>  
+            <div class="form-group col-md-5">  
+                <label>Student Address</label>  
+                <input type="text" name="StudentAddress" id="StudentAddress" class="form-control" placeholder="Enter Student Address" required="" />  
+            </div>  
+  
+            <div class="form-group col-md-1">  
+                <div style="float: right; display:inline-block;">  
+                    <input class="btn btn-primary" name="submitButton" id="btnSave" value="Save" type="button">  
+                </div>  
+            </div>  
+        </div>  
+    </div><hr />  
+    <table id="tblStudent" class="table table-bordered table-striped table-responsive table-hover">  
+        <thead>  
+            <tr>  
+                <th align="left" class="productth">ID</th>  
+                <th align="left" class="productth">Student Name</th>  
+                <th align="left" class="productth">Student Address</th>  
+            </tr>  
+        </thead>  
+        <tbody></tbody>  
+    </table>  
+</div>  
+
+@section Scripts  
+{  
+    <script type="text/javascript">  
+    $(
+        function () {  
+        LoadData();  
+        $("#btnSave").click(function () {  
+            var student = {};
+            student.studentName = $("#StudentName").val();  
+            student.studentAddress = $("#StudentAddress").val();  
+            $.ajax({  
+                type: "POST",  
+                dataType: "json",
+                url: '@Url.Action("CreateStudent")',  
+                data: student,  
+                success: function () {
+                    LoadData();  
+                },  
+                error: function () {
+                    alert("Error while inserting data");  
+                }  
+            });
+            return false;});
+        });
+
+
+
+
+
+    function LoadData() {  
+        $("#tblStudent tbody tr").remove();  
+        $.ajax({  
+            type: 'POST',  
+            url: '@Url.Action("getStudent")',  
+            dataType: 'json',  
+            data: { id: '' },  
+            success: function (data) {  
+                var items = '';  
+                $.each(data, function (i, item) {  
+                    var rows = "<tr>"   
+                    + "<td class='prtoducttd'>" + item.id + "</td>"  
+                    + "<td class='prtoducttd'>" + item.studentName + "</td>"  
+                    + "<td class='prtoducttd'>" + item.studentAddress + "</td>"  
+                    + `<td class='prtoducttd'><button type='submit' class='studentDelete' studentId=${item.id}>Delete</button></td>`
+                    + `<td class='prtoducttd'><button type='submit' class='studentEdit studentId=${item.id}>Edit</button><td>'`
+                    + "</tr>";  
+                    $('#tblStudent tbody').append(rows);  
+                });  
+                $(".studentDelete").each(function() {
+                    $(this).on('click', function() {
+                        var getId = $(this).attr('studentId');
+                        $.ajax({
+                            type: "POST",
+                            url: `/Student/DeleteStudent?id=${getId}`,
+                            success:function(){
+                                LoadData();
+                            },
+                            error:function(){
+                                alert("Error while deleting student");
+                            }
+                        })
+                    })
+                });
+                $(".EditStudent").each(function() {
+                     $(this).on('click', function() {
+                        var getId = $(this).attr('studentId');
+                        $.ajax({
+                            type: "POST",
+                            url: `/Student/EditStudent?id=${getId}`, 
+                            success:function(){
+                                LoadData();
+                            },
+                            error:function(){
+                                alert("Error while edit student");
+                            }
+                        })
+                    })
+                })
+            },  
+            error: function (ex) {  
+                var r = jQuery.parseJSON(response.responseText);  
+                alert("Message: " + r.Message);  
+                alert("StackTrace: " + r.StackTrace);  
+                alert("ExceptionType: " + r.ExceptionType);  
+            }  
+        });  
+        return false;  
+
+
+    }
+    
+
+
+
+    </script>  
+}  
